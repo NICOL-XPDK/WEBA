@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Input App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .submissions {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e1e5e9;
+        }
+
+        .submission-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .submission-item h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .submission-item p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            margin-top: 10px;
+            padding: 10px 20px;
+            width: auto;
+            display: inline-block;
+        }
+
+        .clear-btn:hover {
+            background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Feedback Form</h1>
+        
+        <form id="userForm">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="feedback">General Feedback</option>
+                    <option value="suggestion">Suggestion</option>
+                    <option value="complaint">Complaint</option>
+                    <option value="compliment">Compliment</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Your Message *</label>
+                <textarea id="message" name="message" placeholder="Tell us what's on your mind..." required></textarea>
+            </div>
+            
+            <button type="submit">Submit Feedback</button>
+        </form>
+        
+        <div id="successMessage" class="success-message">
+            Thank you! Your feedback has been submitted successfully.
+        </div>
+        
+        <div class="submissions">
+            <h2>Recent Submissions</h2>
+            <div id="submissionsList"></div>
+            <button id="clearBtn" class="clear-btn" style="display: none;">Clear All Submissions</button>
+        </div>
+    </div>
+
+    <script>
+        let submissions = [];
+
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                category: document.getElementById('category').value,
+                message: document.getElementById('message').value,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            submissions.unshift(formData);
+            
+            // Show success message
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+            
+            // Reset form
+            this.reset();
+            
+            // Update submissions display
+            displaySubmissions();
+            
+            // In a real app, you would send this data to your Azure storage here
+            console.log('Submission data:', formData);
+        });
+
+        function displaySubmissions() {
+            const submissionsList = document.getElementById('submissionsList');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            if (submissions.length === 0) {
+                submissionsList.innerHTML = '<p style="color: #999; text-align: center; font-style: italic;">No submissions yet.</p>';
+                clearBtn.style.display = 'none';
+                return;
+            }
+            
+            submissionsList.innerHTML = submissions.map(submission => `
+                <div class="submission-item">
+                    <h3>${submission.name}</h3>
+                    <p><strong>Email:</strong> ${submission.email}</p>
+                    <p><strong>Category:</strong> ${submission.category}</p>
+                    <p><strong>Message:</strong> ${submission.message}</p>
+                    <p><strong>Submitted:</strong> ${submission.timestamp}</p>
+                </div>
+            `).join('');
+            
+            clearBtn.style.display = 'inline-block';
+        }
+
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all submissions?')) {
+                submissions = [];
+                displaySubmissions();
+            }
+        });
+
+        // Initialize display
+        displaySubmissions();
+    </script>
+</body>
+</html>
+
+
+
+
