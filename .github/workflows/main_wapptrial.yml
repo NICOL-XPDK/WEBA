@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - wapptrial
+name: Build and deploy Node.js app to Azure Web App - wapptrial
 
 on:
   push:
@@ -18,38 +18,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
         with:
-          dotnet-version: '9.x'
+          node-version: '22.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
-
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: node-app
+          path: .
 
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
+          name: node-app
       
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
         with:
           app-name: 'wapptrial'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0DF6A7EEB35F4349AEE7D54CAB5A24A5 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_75A0D350F97D4B54A64E7A9B2210B981 }}
